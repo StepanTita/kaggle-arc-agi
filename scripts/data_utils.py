@@ -1,6 +1,7 @@
 import json
 
 from datasets import Dataset, DatasetDict  # type: ignore
+from datasets import concatenate_datasets  # type: ignore
 
 
 def load_data(file_path):
@@ -139,7 +140,7 @@ What is the output grid? Only provide the output grid in the form as in the exam
     eval_dataset = eval_dataset.map(lambda x: process_dataset(x, eval_dataset["solution"]), batched=True)
 
     if final_training:  # if final training, we need to add the validation dataset to the training dataset
-        train_dataset = Dataset.concatenate([train_dataset, eval_dataset])
+        train_dataset = concatenate_datasets([train_dataset, eval_dataset])
 
         return DatasetDict(
             {
