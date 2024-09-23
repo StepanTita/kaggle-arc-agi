@@ -24,3 +24,13 @@
 * Try multiple approaches to the problem at the same time (e.g. we generate multiple solutions as a plain matrix, and then multiple solutions as code, etc.)
 
 * We take each of the training examples, and learning on the rest trying to predict it as test. When we see an error - we add this error to the context and try on different training examples
+
+* Expanding on previous idea - we take each of the training examples, and learning on the rest trying to predict it as test. When we see an error - we add this error to the context and try on different training examples and add this as a separarte prompt section.
+
+Dataset update:
+```bash
+kaggle datasets init -p models/gemma-2-9b-it/baseline
+kaggle datasets version -p models/gemma-2-9b-it/baseline -m "Gemma 2 9B"
+
+kaggle models init -p models/gemma-2-9b-it/baseline/
+```
