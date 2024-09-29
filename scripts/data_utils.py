@@ -129,7 +129,7 @@ def prepare_dataset(tokenizer, use_system_prompt=True, fit_dataset=False, base_p
             messages.append(
                 {
                     "role": "assistant",
-                    "content": prepare_inputs_func(solution, solution=True),
+                    "content": prepare_inputs_func(solution, prepare_solution=True),
                 }
             )
 
