@@ -27,6 +27,8 @@
 
 * Expanding on previous idea - we take each of the training examples, and learning on the rest trying to predict it as test. When we see an error - we add this error to the context and try on different training examples and add this as a separarte prompt section.
 
+* Use above technique to generate error corrections for the training set and augment data
+
 Dataset update:
 ```bash
 kaggle datasets init -p models/gemma-2-9b-it/baseline

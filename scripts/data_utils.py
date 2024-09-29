@@ -3,6 +3,26 @@ import json
 from datasets import Dataset, DatasetDict  # type: ignore
 from datasets import concatenate_datasets  # type: ignore
 
+BASIC_PROMPT = """Here are the example input and output pairs from which you should learn the underlying rule to later predict the output for the given test input:
+-----------------
+{training_data}
+-----------------
+Now, solve the following puzzle based on its input grid by applying the rules you have learned from the training data.:
+-----------------
+{input_test_data}
+-----------------
+What is the output grid? Only provide the output grid in the form as in the example input and output pairs. Do not provide any additional information:"""
+
+COMPREHENSIVE_PROMPT = """You are given examples of the output with error corrections. you should learn the underlying rule to later predict the output for the given test input:
+-----------------
+{errors_corrections}
+-----------------
+Now, solve the following puzzle based on its input grid by applying the rules you have learned from the training data.:
+-----------------
+{input_test_data}
+-----------------
+What is the output grid? Only provide the output grid in the form as in the example input and output pairs. Do not provide any additional information:"""
+
 
 def load_data(file_path):
     with open(file_path, "r") as f:
@@ -64,29 +84,21 @@ def to_dataset(data, solutions=None, fit_dataset=False):
     return Dataset.from_dict(restructured_data)
 
 
-def prepare_inputs(dct):
-    input_str = "\n".join("".join(map(str, row)) for row in dct["input"])
-    output_str = "\n".join("".join(map(str, row)) for row in dct["output"]) if "output" in dct else ""
-    text = f"<input>\n{input_str}\n</input>\n\n<output>\n{output_str}\n</output>"
-    return text
+def prepare_inputs(dct, prepare_solution=False):
+    if prepare_solution:
+        return "<output>\n" + "\n".join("".join(map(str, row)) for row in dct) + "\n</output>"
+    else:
+        input_str = "\n".join("".join(map(str, row)) for row in dct["input"])
+        output_str = "\n".join("".join(map(str, row)) for row in dct["output"]) if "output" in dct else ""
+        text = f"<input>\n{input_str}\n</input>\n\n<output>\n{output_str}\n</output>"
+        return text
 
 
-def prepare_dataset(tokenizer, use_system_prompt=False, fit_dataset=False, base_path=None, final_training=False):
+def prepare_dataset(tokenizer, use_system_prompt=True, fit_dataset=False, base_path=None, final_training=False, prepare_inputs_func=prepare_inputs):
     # The system_prompt defines the initial instructions for the model, setting the context for solving ARC tasks.
     system_prompt = (
         """You are a puzzle solving wizard. You are given a puzzle from the abstraction and reasoning corpus developed by Francois Chollet."""
     )
-
-    # User message template is a template for creating user prompts. It includes placeholders for training data and test input data, guiding the model to learn the rule and apply it to solve the given puzzle.
-    user_message_template = """Here are the example input and output pairs from which you should learn the underlying rule to later predict the output for the given test input:
------------------
-{training_data}
------------------
-Now, solve the following puzzle based on its input grid by applying the rules you have learned from the training data.:
------------------
-{input_test_data}
------------------
-What is the output grid? Only provide the output grid in the form as in the example input and output pairs. Do not provide any additional information:"""
 
     # Load all datasets
     training_challenges = load_data(f"{base_path}/arc-prize-2024/arc-agi_training_challenges.json")
@@ -100,9 +112,9 @@ What is the output grid? Only provide the output grid in the form as in the exam
     pred_dataset = to_dataset(test_challenges, fit_dataset=fit_dataset)
 
     def create_chat(challenge, solution=None):
-        user_content = user_message_template.format(
-            training_data="\n\n".join([prepare_inputs(ex) for ex in challenge["train"]]),
-            input_test_data=prepare_inputs(challenge["test"]),
+        user_content = BASIC_PROMPT.format(
+            training_data="\n\n".join([prepare_inputs_func(ex) for ex in challenge["train"]]),
+            input_test_data=prepare_inputs_func(challenge["test"]),
         )
 
         if use_system_prompt:
@@ -117,7 +129,7 @@ What is the output grid? Only provide the output grid in the form as in the exam
             messages.append(
                 {
                     "role": "assistant",
-                    "content": "<output>\n" + "\n".join("".join(map(str, row)) for row in solution) + "\n</output>",
+                    "content": prepare_inputs_func(solution, solution=True),
                 }
             )
 
@@ -164,3 +176,14 @@ What is the output grid? Only provide the output grid in the form as in the exam
     )
 
     return dataset
+
+
+def prepare_correction_dataset(tokenizer, base_path=None):
+    # Load all datasets
+    training_challenges = load_data(f"{base_path}/arc-prize-2024/arc-agi_training_challenges.json")
+    training_solutions = load_data(f"{base_path}/arc-prize-2024/arc-agi_training_solutions.json")
+
+    eval_challenges = load_data(f"{base_path}/arc-prize-2024/arc-agi_evaluation_challenges.json")
+    eval_solutions = load_data(f"{base_path}/arc-prize-2024/arc-agi_evaluation_solutions.json")
+
+    ...  # TODO

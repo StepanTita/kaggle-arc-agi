@@ -125,3 +125,23 @@ def collate(mode, tokenizer):
             }
 
     return collate_fn
+
+
+def error_correction(pred, label):
+    if pred is None:
+        return None, "Output is not in the correct format"
+
+    output = [[str(cell) for cell in row] for row in pred]
+
+    if pred == label:
+        return output, "Output is correct"
+
+    if len(pred) != len(label) or any(len(p) != len(l) for p, l in zip(pred, label)):
+        return output, "Output shape is wrong"
+
+    for i in range(len(pred)):
+        for j in range(len(pred[i])):
+            if pred[i][j] != label[i][j]:
+                output[i][j] = f'({pred[i][j]})->({label[i][j]})'
+
+    return output, "Output has errors"
