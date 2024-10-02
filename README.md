@@ -29,6 +29,8 @@
 
 * Use above technique to generate error corrections for the training set and augment data
 
+* Do the weighted voting on the output. Predict with each training example being the target, and also without the correction. Then average the results with weights.
+
 Dataset update:
 ```bash
 kaggle datasets init -p models/gemma-2-9b-it/baseline

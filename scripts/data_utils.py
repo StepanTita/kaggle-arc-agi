@@ -3,6 +3,9 @@ import json
 from datasets import Dataset, DatasetDict  # type: ignore
 from datasets import concatenate_datasets  # type: ignore
 
+# The system_prompt defines the initial instructions for the model, setting the context for solving ARC tasks.
+SYSTEM_PROMPT = """You are a puzzle solving wizard. You are given a puzzle from the abstraction and reasoning corpus developed by Francois Chollet."""
+
 BASIC_PROMPT = """Here are the example input and output pairs from which you should learn the underlying rule to later predict the output for the given test input:
 -----------------
 {training_data}
@@ -95,11 +98,6 @@ def prepare_inputs(dct, prepare_solution=False):
 
 
 def prepare_dataset(tokenizer, use_system_prompt=True, fit_dataset=False, base_path=None, final_training=False, prepare_inputs_func=prepare_inputs):
-    # The system_prompt defines the initial instructions for the model, setting the context for solving ARC tasks.
-    system_prompt = (
-        """You are a puzzle solving wizard. You are given a puzzle from the abstraction and reasoning corpus developed by Francois Chollet."""
-    )
-
     # Load all datasets
     training_challenges = load_data(f"{base_path}/arc-prize-2024/arc-agi_training_challenges.json")
     training_solutions = load_data(f"{base_path}/arc-prize-2024/arc-agi_training_solutions.json")
@@ -119,11 +117,11 @@ def prepare_dataset(tokenizer, use_system_prompt=True, fit_dataset=False, base_p
 
         if use_system_prompt:
             messages = [
-                {"role": "system", "content": system_prompt},
+                {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": user_content},
             ]
         else:
-            messages = [{"role": "user", "content": f"{system_prompt}\n\n{user_content}"}]
+            messages = [{"role": "user", "content": f"{SYSTEM_PROMPT}\n\n{user_content}"}]
 
         if solution:
             messages.append(
@@ -160,10 +158,7 @@ def prepare_dataset(tokenizer, use_system_prompt=True, fit_dataset=False, base_p
                 "predict": pred_dataset,
             }
         )
-
-    train_dataset = train_dataset.map(lambda x: process_dataset(x, train_dataset["solution"]), batched=True)
-
-    eval_dataset = eval_dataset.map(lambda x: process_dataset(x, eval_dataset["solution"]), batched=True)
+        
     test_dataset = eval_dataset.train_test_split(test_size=0.3)
 
     dataset = DatasetDict(
@@ -176,14 +171,3 @@ def prepare_dataset(tokenizer, use_system_prompt=True, fit_dataset=False, base_p
     )
 
     return dataset
-
-
-def prepare_correction_dataset(tokenizer, base_path=None):
-    # Load all datasets
-    training_challenges = load_data(f"{base_path}/arc-prize-2024/arc-agi_training_challenges.json")
-    training_solutions = load_data(f"{base_path}/arc-prize-2024/arc-agi_training_solutions.json")
-
-    eval_challenges = load_data(f"{base_path}/arc-prize-2024/arc-agi_evaluation_challenges.json")
-    eval_solutions = load_data(f"{base_path}/arc-prize-2024/arc-agi_evaluation_solutions.json")
-
-    ...  # TODO
