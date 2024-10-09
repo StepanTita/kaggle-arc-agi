@@ -16,7 +16,11 @@ Now, solve the following puzzle based on its input grid by applying the rules yo
 -----------------
 What is the output grid? Only provide the output grid in the form as in the example input and output pairs. Do not provide any additional information:"""
 
-COMPREHENSIVE_PROMPT = """You are given examples of the output with error corrections. you should learn the underlying rule to later predict the output for the given test input:
+COMPREHENSIVE_PROMPT = """Here are the example input and output pairs from which you should learn the underlying rule to later predict the output for the given test input:
+-----------------
+{training_data}
+-----------------
+You are given examples of the output with error corrections. you should learn the underlying rule to later predict the output for the given test input:
 -----------------
 {errors_corrections}
 -----------------
