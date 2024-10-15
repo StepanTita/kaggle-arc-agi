@@ -93,11 +93,13 @@ def to_dataset(data, solutions=None, fit_dataset=False):
 
 def prepare_inputs(dct, prepare_solution=False):
     if prepare_solution:
-        return "<output>\n" + "\n".join("".join(map(str, row)) for row in dct) + "\n</output>"
+        return "<output>\n" + "\n".join(" ".join(map(str, row)) for row in dct) + "\n</output>"
     else:
-        input_str = "\n".join("".join(map(str, row)) for row in dct["input"])
-        output_str = "\n".join("".join(map(str, row)) for row in dct["output"]) if "output" in dct else ""
-        text = f"<input>\n{input_str}\n</input>\n\n<output>\n{output_str}\n</output>"
+        input_str = "\n".join(" ".join(map(str, row)) for row in dct["input"])
+        output_str = "\n".join(" ".join(map(str, row)) for row in dct["output"]) if "output" in dct else ""
+        text = f"<input>\n{input_str}\n</input>"
+        if output_str:
+            text += f"\n\n<output>\n{output_str}\n</output>"
         return text
 
 

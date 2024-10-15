@@ -38,3 +38,8 @@ kaggle datasets version -p models/gemma-2-9b-it/baseline -m "Gemma 2 9B"
 
 kaggle models init -p models/gemma-2-9b-it/baseline/
 ```
+
+* Add VLLM
+* Add augmentation (rotations, flips, etc.)
+* Add chain of thought
+* Replace numbers with emojis
