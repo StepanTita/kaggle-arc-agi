@@ -43,3 +43,9 @@ kaggle models init -p models/gemma-2-9b-it/baseline/
 * Add augmentation (rotations, flips, etc.)
 * Add chain of thought
 * Replace numbers with emojis
+
+
+To test:
+- no error correction
+- error correction
+- semi-cheating (updating parameters during the inference) by adding more examples that do not change the pattern but add new perspective
