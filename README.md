@@ -49,3 +49,4 @@ To test:
 - no error correction
 - error correction
 - semi-cheating (updating parameters during the inference) by adding more examples that do not change the pattern but add new perspective
+- add model freezing after some warmup tuning
